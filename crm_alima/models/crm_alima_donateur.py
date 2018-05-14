@@ -9,7 +9,8 @@ import threading
 from array import *
 
 from dateutil import relativedelta
-
+from workalendar.europe import France
+cal = France()
 
 from odoo.exceptions import UserError
 
@@ -488,6 +489,11 @@ class Donateur(models.Model):
         for eng in self.engagements:
             if eng.statut_engagement and eng.statut_engagement == 'actif':
                 self.statut_PA = True
+        
+    def compute_date_don(self, datetime):
+        if not cal.is_working_day(datetime):
+            return self.compute_date_don(datetime + relativedelta.relativedelta(days=1))
+        return datetime
 
     def date_a_prelever(self, date):
         try:
@@ -504,7 +510,55 @@ class Donateur(models.Model):
             donateur.nombreDons = len(donateur.dons)
 
         
-    
+    def scheduler_credit_coop(self):
+        """
+        On récuperer tous les donateurs de la base
+        Pour chaque donateur on verifie s'il à un engagement(credit coop) 
+        pour lequel on doit déclencher la création d'un don
+        Param de verification: statut d'engagement, le don correspondant via le code media de l'engagement,
+        date prochaine prélévement, periodicité, mode de versement
+        """
+        raise UserError(_("Test in"))
+        all_donateurs = self.env['crm.alima.donateur'].search([])
+        for donateur in all_donateurs:
+            if donateur.engagements and donateur.dons:
+                for eng in donateur.engagements:
+                    if eng.statut_engagement == 'actif' and eng.date_prochain_prelevement and datetime.strptime(eng.date_prochain_prelevement, '%Y-%m-%d') < datetime.today():
+                        for don in donateur.dons:
+                            if don.codeMedia.id == eng.code_media.id and don.moyen_paiment == 'Compte bancaire' and don.mode_versement=="avec prelevement":
+                                #Creation du don credit coop
+                                date_du_don = self.compute_date_don(datetime.strptime(eng.date_prochain_prelevement, '%Y-%m-%d'))
+                                create_don = self \
+                                    .env['crm.alima.don'] \
+                                    .search([('donateur', '=', donateur.id),('codeMedia', '=', eng.code_media.id)], limit=1) \
+                                    .copy({
+                                        'date': str(date_du_don),
+                                        'montantEur': eng.montant,
+                                })
+
+                                #Mise à jour de l'engagement aprés la création du don
+                                if create_don:
+                                    if eng.date_premier_prelevement:
+                                        jour = eng.date_premier_prelevement.split('-')[2]
+                                        date = create_don.date.split('-')
+                                        date[2] = jour
+                                        date = "/".join(date)
+                                        date_prochain = self.date_a_prelever(date)
+                                    else:
+                                        date_prochain = create_don.date
+
+                                    eng.write({
+                                        'date_dernier_prelevement': create_don.date,
+                                        'date_prochain_prelevement': str(self.compute_date_don(
+                                            datetime.strptime(date_prochain,'%Y-%m-%d')     
+                                                +
+                                            relativedelta.relativedelta(months=PERIODICITE_MOIS_EN_ENTIER[eng.periodicite])
+                                        )) 
+
+                                    })
+                                #Le premier don qu'on rencontre qui vient de credit coop. 
+                                #On incremente d'un don puis on sort de la boucle
+                                break
 
 
 class ScoreLAI(models.Model):
