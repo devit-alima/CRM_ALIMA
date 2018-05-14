@@ -1,0 +1,44 @@
+<odoo>
+     <!-- Action to open To-do Task list -->
+    <act_window id="action_crm_alima_donateur"
+    name="Donateur"
+    res_model="crm.alima.donateur"
+    view_mode="kanban,tree,form,graph"/>
+
+    <act_window id="action_crm_alima_don"
+    name="Dons"
+    res_model="crm.alima.don"
+    view_mode="tree,form,graph" />
+
+    <act_window id="action_crm_alima_code_media"
+    name="Code media"
+    res_model="crm.alima.code.media"
+    view_mode="tree,form" />
+
+    <act_window id="action_crm_alima_engagements"
+    name="Engagements"
+    res_model="crm.alima.engagements"
+    view_mode="tree,form" />
+
+    <act_window id="action_crm_alima_import"
+    name="Import Don"
+    res_model="crm.alima.import.don.credit.coop"
+    view_mode="tree,form" />
+
+    <act_window id="action_crm_alima_mise_jour_don"
+    name="Update Don"
+    res_model="crm.alima.update.don"
+    view_mode="tree,form" />
+
+    <menuitem id="crm_alima_menu" name="CRM ALIMA"/>
+    <menuitem id="crm_alima_donateur" name="Donateurs" parent="crm_alima_menu" action="action_crm_alima_donateur"/>
+    <menuitem id="crm_alima_don" name="Dons" parent="crm_alima_menu" action="action_crm_alima_don"/>
+    <menuitem id="crm_alima_code_media" name="Code media" parent="crm_alima_menu" action="action_crm_alima_code_media"/>
+    <menuitem id="crm_alima_engagements" name="Engagements" parent="crm_alima_menu" action="action_crm_alima_engagements"/>
+    <!-- Menu item to open To-do Task list -->
+    <menuitem id="crm_alima_util" name="Utils" parent="crm_alima_menu"/>
+
+    <menuitem id="crm_alima_import" name="Import Don" parent="crm_alima_util" action="action_crm_alima_import"/>
+    <menuitem id="crm_alima_mise_jour_don" name="Update Don" parent="crm_alima_util" action="action_crm_alima_mise_jour_don"/>
+
+</odoo>
