@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'crm donateur',
+    'description':'CRM ALIMA'
     'version': '1.0',
     'category': 'CRM',
     'depends': [
